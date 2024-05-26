@@ -1,10 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DrawBoard extends JPanel {
     private int posX,posY;
     private int oldX=posX,oldY = posY;
+    private List<Shape> shapeList;
 
     private static Color color = Color.black;
 
@@ -27,6 +33,7 @@ public class DrawBoard extends JPanel {
 
     private DrawBoard()
     {
+        shapeList = new ArrayList<Shape>();
         setPreferredSize(new Dimension(1000,800));
         this.addMouseMotionListener(new MouseAdapter() {
             @Override
@@ -42,11 +49,12 @@ public class DrawBoard extends JPanel {
                     {
                         oldX = posX;
                         oldY = posY;
-                        g.setStroke(new BasicStroke(2));
-                        g.drawLine(oldX, oldY, posX, posY);
+                        shapeList.add(new Line2D.Float(oldX, oldY, posX, posY));
                         break;
                     }
                 }
+
+                singleton.repaint();
             }
         });
         this.addMouseListener(new MouseAdapter() {
@@ -63,21 +71,22 @@ public class DrawBoard extends JPanel {
                     {
                         oldX = posX;
                         oldY = posY;
-                        g.setStroke(new BasicStroke(2));
-                        g.drawLine(oldX, oldY, posX, posY);
+                        shapeList.add(new Line2D.Float(oldX, oldY, posX, posY));
                         break;
                     }
                     case "Circle":
                     {
-                        g.fillOval(posX-15,posY-15,30,30);
+                        shapeList.add(new Ellipse2D.Float(posX-15,posY-15,30,30));
                         break;
                     }
                     case "Square":
                     {
-                        g.fillRect(posX-15,posY-15,30,30);
+                        shapeList.add(new Rectangle2D.Float(posX-15,posY-15,30,30));
                         break;
                     }
                 }
+
+                singleton.repaint();
             }
         });
     }
@@ -87,10 +96,15 @@ public class DrawBoard extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
         g2.setStroke(new BasicStroke(2));
-        g2.drawLine(0,0,500,50);
+        for (Shape s : shapeList)
+        {
+            g2.draw(s);
+            g2.fill(s);
+        }
     }
 
     public static void clear() {
+        singleton.shapeList.clear();
         singleton.repaint();
     }
 }
