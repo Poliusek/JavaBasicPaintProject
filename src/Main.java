@@ -60,7 +60,6 @@ public class Main {
 
         window.add(p, BorderLayout.NORTH);
         window.add(p1, BorderLayout.SOUTH);
-
         window.add(d, BorderLayout.CENTER);
 
         window.pack();

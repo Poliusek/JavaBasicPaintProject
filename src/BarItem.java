@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.io.File;
 
 public class BarItem extends JMenuItem {
     BarItem(String text,int mnemonic, int accelerator, int acceleratormask){
@@ -23,7 +24,22 @@ public class BarItem extends JMenuItem {
                     System.exit(Window.EXIT_ON_CLOSE);
                     break;
                 }
+                case "Open":
+                {
+                    openFile();
+                    break;
+                }
             }
         });
+    }
+
+    private void openFile()
+    {
+        System.out.println("Opening file...");
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.showOpenDialog(this);
+        File file = chooser.getSelectedFile();
+        System.out.println(file.getAbsolutePath());
     }
 }

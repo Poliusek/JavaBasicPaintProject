@@ -35,6 +35,7 @@ public class DrawBoard extends JPanel {
     {
         shapeList = new ArrayList<Shape>();
         setPreferredSize(new Dimension(1000,800));
+
         this.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -69,6 +70,8 @@ public class DrawBoard extends JPanel {
                 {
                     case "Pen":
                     {
+                        if(oldX == posX && oldY == posY)
+                            break;
                         oldX = posX;
                         oldY = posY;
                         shapeList.add(new Line2D.Float(oldX, oldY, posX, posY));
@@ -99,7 +102,7 @@ public class DrawBoard extends JPanel {
         for (Shape s : shapeList)
         {
             g2.draw(s);
-            g2.fill(s);
+//            g2.fill(s);
         }
     }
 
