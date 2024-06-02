@@ -8,7 +8,7 @@ public class MenuRadialButton extends JRadioButtonMenuItem {
         this.setAccelerator(KeyStroke.getKeyStroke( accelerator, acceleratormask));
         this.addActionListener(e -> {
             selectedToolName = this.getText();
-            Main.tool.setText(selectedToolName);
+            ToolBar.tool.setText(selectedToolName);
         });
     }
 }

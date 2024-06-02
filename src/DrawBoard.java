@@ -1,16 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class DrawBoard extends JPanel {
-    private int posX,posY;
-    private int oldX=posX,oldY = posY;
-    private List<Shape> shapeList;
+import Tools.*;
+
+public class DrawBoard extends JPanel implements KeyListener {
+    private boolean shouldDelete = false;
+    private List<DrawComponent> shapeList;
+    private List<DrawComponent> removedElements;
 
     private static Color color = Color.black;
 
@@ -33,76 +33,47 @@ public class DrawBoard extends JPanel {
 
     private DrawBoard()
     {
-        shapeList = new ArrayList<Shape>();
+        shapeList = new ArrayList<>();
+        removedElements = new ArrayList<>();
         setPreferredSize(new Dimension(1000,800));
 
-        this.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                Graphics2D g = (Graphics2D)getGraphics();
-                g.setPaintMode();
-                g.setColor(color);
-                posX = e.getX();
-                posY = e.getY();
-                switch (MenuRadialButton.selectedToolName)
-                {
-                    case "Pen":
-                    {
-                        oldX = posX;
-                        oldY = posY;
-                        shapeList.add(new Line2D.Float(oldX, oldY, posX, posY));
-                        break;
-                    }
-                }
+        MouseInnerHandler h = new MouseInnerHandler();
 
-                singleton.repaint();
-            }
-        });
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Graphics2D g = (Graphics2D)getGraphics();
-                g.setPaintMode();
-                g.setColor(color);
-                posX = e.getX();
-                posY = e.getY();
-                switch (MenuRadialButton.selectedToolName)
-                {
-                    case "Pen":
-                    {
-                        if(oldX == posX && oldY == posY)
-                            break;
-                        oldX = posX;
-                        oldY = posY;
-                        shapeList.add(new Line2D.Float(oldX, oldY, posX, posY));
-                        break;
-                    }
-                    case "Circle":
-                    {
-                        shapeList.add(new Ellipse2D.Float(posX-15,posY-15,30,30));
-                        break;
-                    }
-                    case "Square":
-                    {
-                        shapeList.add(new Rectangle2D.Float(posX-15,posY-15,30,30));
-                        break;
-                    }
-                }
+        this.addMouseMotionListener(h);
+        this.addMouseListener(h);
+    }
 
-                singleton.repaint();
-            }
-        });
+    public static void removeLast() {
+        if(getDrawBoard().shapeList.isEmpty())
+            return;
+        int lastElement = getDrawBoard().shapeList.size()-1;
+        getDrawBoard().removedElements.add(getDrawBoard().shapeList.get(lastElement));
+        getDrawBoard().shapeList.remove(lastElement);
+        getDrawBoard().repaint();
+    }
+
+    public static void reAddLast()
+    {
+        if(getDrawBoard().removedElements.isEmpty())
+            return;
+        int lastElement = getDrawBoard().removedElements.size()-1;
+        getDrawBoard().shapeList.add(getDrawBoard().removedElements.get(lastElement));
+        getDrawBoard().removedElements.remove(lastElement);
+        getDrawBoard().repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setStroke(new BasicStroke(2));
-        for (Shape s : shapeList)
+        for (DrawComponent s : shapeList)
         {
-            g2.draw(s);
-//            g2.fill(s);
+            if(s.getColor() != null)
+                g2.setColor(s.getColor());
+            g2.draw(s.paint());
+            g2.fill(s.paint());
         }
     }
 
@@ -110,4 +81,86 @@ public class DrawBoard extends JPanel {
         singleton.shapeList.clear();
         singleton.repaint();
     }
+
+    private class MouseInnerHandler extends MouseAdapter {
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (!MenuRadialButton.selectedToolName.equals("Pen"))
+                return;
+            super.mouseDragged(e);
+            addPenStroke(e);
+            singleton.repaint();
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
+            if (shouldDelete)
+            {
+                for (Iterator i = shapeList.iterator(); i.hasNext(); ) {
+                    DrawComponent c = (DrawComponent)i.next();
+                    if(c.getShape().contains(e.getPoint()))
+                        new PopUp("Usuwanie", "Usunąć?", new String[]{"Yes", "No"}, c);
+                }
+                return;
+            }
+            if (!MenuRadialButton.selectedToolName.equals("Pen"))
+                return;
+            addPenStroke(e);
+            singleton.repaint();
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_D)
+            shouldDelete = true;
+        if(e.getKeyCode() == KeyEvent.VK_F1) {
+            Point point = MouseInfo.getPointerInfo().getLocation();
+            SwingUtilities.convertPointFromScreen(point, this);
+            switch (MenuRadialButton.selectedToolName)
+            {
+                case "Circle":
+                {
+                    shapeList.add(new Tools.CircleComponent((int) point.getX(),(int) point.getY(),30,30));
+                    break;
+                }
+                case "Square":
+                {
+                    shapeList.add(new Tools.RectangleComponent((int) point.getX(),(int) point.getY(),30,30));
+                    break;
+                }
+            }
+            ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+            FileManager.setFs(FileManager.FileState.MODIFIED);
+            singleton.repaint();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_D)
+            shouldDelete = false;
+    }
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    private void addPenStroke(MouseEvent e)
+    {
+        shapeList.add(new Pen(e.getX(),e.getY(),color));
+        ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+            FileManager.setFs(FileManager.FileState.MODIFIED);
+        singleton.repaint();
+    }
+
+    public List<DrawComponent> getShapeList() {
+        return shapeList;
+    }
+
+    public List<DrawComponent> getRemovedElements() {
+        return removedElements;
+    }
 }
+
+

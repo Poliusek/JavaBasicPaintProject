@@ -1,45 +1,86 @@
 import javax.swing.*;
-import java.io.File;
+import java.io.*;
+
+import Tools.*;
 
 public class BarItem extends JMenuItem {
-    BarItem(String text,int mnemonic, int accelerator, int acceleratormask){
-        this.setText(text);
+    Tools.Type type;
+    BarItem(Tools.Type type, int mnemonic, int accelerator, int acceleratormask){
+        this.type = type;
+        this.setText(type.getTypeName());
         this.setMnemonic(mnemonic);
         this.setAccelerator(KeyStroke.getKeyStroke( accelerator, acceleratormask));
 
         this.addActionListener(e -> {
-            switch (e.getActionCommand()){
-                case "Color":
+            BarItem b = (BarItem) e.getSource();
+            switch (b.getType()){
+                case COLOR:
                 {
                     DrawBoard.setColor(JColorChooser.showDialog(this, "test",DrawBoard.getColor()));
                     break;
                 }
-                case "Clear":
+                case CLEAR:
                 {
                     DrawBoard.clear();
+                    ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+                    FileManager.setFs(FileManager.FileState.MODIFIED);
                     break;
                 }
-                case "Quit":
+                case QUIT:
                 {
+                    if(FileManager.getFs() == FileManager.FileState.NEW || FileManager.getFs() == FileManager.FileState.MODIFIED)
+                        if(FileManager.getCurrentFile()==null)
+                            try {
+                                FileManager.saveAsFile();
+                            } catch (IOException ex) { throw new RuntimeException(ex); }
+                        else
+                            try {
+                                FileManager.saveFile();
+                            } catch (IOException ex) { throw new RuntimeException(ex); }
                     System.exit(Window.EXIT_ON_CLOSE);
                     break;
                 }
-                case "Open":
+                case UNDO:
                 {
-                    openFile();
+                    DrawBoard.removeLast();
+                    ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+                    FileManager.setFs(FileManager.FileState.MODIFIED);
+                    break;
+                }
+                case REDO:
+                {
+                    DrawBoard.reAddLast();
+                    ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+                    FileManager.setFs(FileManager.FileState.MODIFIED);
+                    break;
+                }
+                case OPEN:
+                {
+                    try {
+                        FileManager.openFile();
+                    }
+                    catch (FileNotFoundException ex) { throw new RuntimeException(ex); }
+                    break;
+                }
+                case SAVE:
+                {
+                    try {
+                        FileManager.saveFile();
+                    } catch (IOException ex) { throw new RuntimeException(ex); }
+                    break;
+                }
+                case SAVEAS:
+                {
+                    try {
+                        FileManager.saveAsFile();
+                    } catch (IOException ex) { throw new RuntimeException(ex); }
                     break;
                 }
             }
         });
     }
 
-    private void openFile()
-    {
-        System.out.println("Opening file...");
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.showOpenDialog(this);
-        File file = chooser.getSelectedFile();
-        System.out.println(file.getAbsolutePath());
+    public Type getType() {
+        return type;
     }
 }
