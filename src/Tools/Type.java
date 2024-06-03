@@ -8,7 +8,8 @@ public enum Type {
     CLEAR("Clear"),
     COLOR("Color"),
     UNDO("Undo"),
-    REDO("Redo");
+    REDO("Redo"),
+    FILL("Fill");
 
     public final String label;
 

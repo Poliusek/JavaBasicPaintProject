@@ -76,6 +76,11 @@ public class BarItem extends JMenuItem {
                     } catch (IOException ex) { throw new RuntimeException(ex); }
                     break;
                 }
+                case FILL:
+                {
+                    DrawBoard.getDrawBoard().setBackground(DrawBoard.getColor());
+                    break;
+                }
             }
         });
     }

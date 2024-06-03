@@ -101,7 +101,7 @@ public class DrawBoard extends JPanel implements KeyListener {
                 for (Iterator i = shapeList.iterator(); i.hasNext(); ) {
                     DrawComponent c = (DrawComponent)i.next();
                     if(c.getShape().contains(e.getPoint()))
-                        new PopUp("Usuwanie", "Usunąć?", new String[]{"Yes", "No"}, c);
+                        new PopUp("Usuwanie", "Usunąć?", new String[]{"Tak", "Nie"}, c);
                 }
                 return;
             }
@@ -124,16 +124,18 @@ public class DrawBoard extends JPanel implements KeyListener {
                 case "Circle":
                 {
                     shapeList.add(new Tools.CircleComponent((int) point.getX(),(int) point.getY(),30,30));
+                    ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+                    FileManager.setFs(FileManager.FileState.MODIFIED);
                     break;
                 }
                 case "Square":
                 {
                     shapeList.add(new Tools.RectangleComponent((int) point.getX(),(int) point.getY(),30,30));
+                    ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
+                    FileManager.setFs(FileManager.FileState.MODIFIED);
                     break;
                 }
             }
-            ToolBar.state.setText(FileManager.FileState.MODIFIED.getState());
-            FileManager.setFs(FileManager.FileState.MODIFIED);
             singleton.repaint();
         }
     }

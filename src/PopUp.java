@@ -13,7 +13,7 @@ public class PopUp extends JPopupMenu {
             JMenuItem it = new JMenuItem(param);
             it.setActionCommand(param);
             it.addActionListener(e -> {
-                if (e.getActionCommand().equals("Yes"))
+                if (e.getActionCommand().equals("Tak"))
                 {
                     if(!DrawBoard.getDrawBoard().getShapeList().isEmpty()) {
                         DrawBoard.getDrawBoard().getRemovedElements().add(ite);

@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 public class TopBar extends JMenuBar {
     public TopBar() {
         JMenu jMenu = new JMenu("File");
+        jMenu.setMnemonic(KeyEvent.VK_F);
         //Open
         jMenu.add(new BarItem(Type.OPEN, KeyEvent.VK_O, KeyEvent.VK_O, ActionEvent.CTRL_MASK));
         //Save
@@ -23,6 +24,7 @@ public class TopBar extends JMenuBar {
         this.add(jMenu);
 
         JMenu jMenu1 = new JMenu("Draw");
+        jMenu1.setMnemonic(KeyEvent.VK_D);
         JMenu jMenu1SubMenu = new JMenu("Figure");
         //Submenu
         jMenu1SubMenu.setMnemonic(KeyEvent.VK_F);
@@ -44,6 +46,7 @@ public class TopBar extends JMenuBar {
         jMenu1.addSeparator();
         //Clear
         jMenu1.add(new BarItem(Type.CLEAR,KeyEvent.VK_C, KeyEvent.VK_N, ActionEvent.CTRL_MASK+ActionEvent.SHIFT_MASK));
+        jMenu1.add(new BarItem(Type.FILL,KeyEvent.VK_F, KeyEvent.VK_F, ActionEvent.CTRL_MASK));
 
         this.add(jMenu1);
     }

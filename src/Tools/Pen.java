@@ -9,10 +9,14 @@ public class Pen extends DrawComponent {
     private Line2D.Float line;
 
     public Pen(int x, int y, Color c) {
-        oldX = x;
-        oldY = y;
+        if((oldX == 0 && oldY == 0) || (Math.abs(oldX - x) > 3 && Math.abs(oldY - y) > 3)) {
+            oldX = x;
+            oldY = y;
+        }
         color = c;
         line = new Line2D.Float(oldX,oldY,x,y);
+        oldX = x;
+        oldY = y;
     }
 
     public Pen(float x, float y,float x1,float y1,Color c) {
